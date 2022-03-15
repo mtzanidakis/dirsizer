@@ -1,5 +1,5 @@
 REGISTRY = hub.mtzanidakis.com
-IMAGE = dirsize
+IMAGE = dirsizer
 VERSION = 0.0.1
 
 .PHONY: all
