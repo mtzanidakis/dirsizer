@@ -122,7 +122,7 @@ func main() {
 
 	log.Printf("Starting DirSizer for %s", d.Domain)
 
-	ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(6 * time.Hour)
 
 	for ; true; <-ticker.C {
 		if err = d.Run(); err != nil {
