@@ -1,0 +1,19 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  REGISTRY: hub.mtzanidakis.com
+  IMAGE: dirsizer
+  VERSION: 0.0.3
+
+tasks:
+  container:
+    cmds:
+      - docker build -t {{ .REGISTRY }}/{{ .IMAGE }}:{{ .VERSION }} .
+      - docker tag {{ .REGISTRY }}/{{ .IMAGE }}:{{ .VERSION }} {{ .REGISTRY }}/{{ .IMAGE }}:latest
+
+  container-push:
+    cmds:
+      - docker push {{ .REGISTRY }}/{{ .IMAGE }}:{{ .VERSION }}
+      - docker push {{ .REGISTRY }}/{{ .IMAGE }}:latest
