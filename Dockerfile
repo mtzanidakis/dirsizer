@@ -1,5 +1,5 @@
-FROM golang:alpine as builder
-RUN apk add --no-cache upx
+FROM golang:1.18-alpine as builder
+RUN apk add --no-cache git upx
 COPY . /src
 WORKDIR /src
 RUN CGO_ENABLED=0 go build  -ldflags='-w -s -extldflags "-static"' -a
