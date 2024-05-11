@@ -14,17 +14,17 @@ import (
 )
 
 type DirSizer struct {
-	Domain    string
-	DirPath   string
-	MailFrom  string
-	MailTo    string
-	Threshold int64
+	Identifier string
+	Directory  string
+	MailFrom   string
+	MailTo     string
+	Threshold  int64
 	*gomail.Dialer
 }
 
 // NewDirSizer returns a new DirSizer.
 func NewDirSizer(
-	domain, dirPath, mailFrom, mailTo, smtpServer, threshold string,
+	identifier, directory, mailFrom, mailTo, smtpServer, threshold string,
 ) (*DirSizer, error) {
 	smtpServerSplit := strings.Split(smtpServer, ":")
 	smtpHost := smtpServerSplit[0]
@@ -41,19 +41,19 @@ func NewDirSizer(
 	}
 
 	return &DirSizer{
-		Domain:    domain,
-		DirPath:   dirPath,
-		MailFrom:  mailFrom,
-		MailTo:    mailTo,
-		Threshold: thresholdInt,
-		Dialer:    &d,
+		Identifier: identifier,
+		Directory:  directory,
+		MailFrom:   mailFrom,
+		MailTo:     mailTo,
+		Threshold:  thresholdInt,
+		Dialer:     &d,
 	}, nil
 }
 
 // Count returns the size of the given directory in bytes.
 func (d *DirSizer) Count() (int64, error) {
 	var size int64
-	err := filepath.Walk(d.DirPath, func(_ string, info os.FileInfo, err error) error {
+	err := filepath.Walk(d.Directory, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -75,16 +75,15 @@ func (d *DirSizer) SendMail(subject, body string) error {
 	return d.Dialer.DialAndSend(m)
 }
 
-// Run runs the DirSizer.
-func (d *DirSizer) Run() error {
-	const bodyTmpl = `
+const bodyTmpl = `
 <h1>Directory size exceeded</h1>
-<p><b>Domain</b> %s</p>
 <p><b>Size</b> %s</p>
 <p><b>Threshold</b> %s</p>`
-	const logTmpl = "Directory size exceeded: %s"
-	const subjectTmpl = "Directory size exceeded for %s"
+const logTmpl = "Directory size exceeded: %s"
+const subjectTmpl = "Directory size exceeded for %s"
 
+// Run runs the DirSizer.
+func (d *DirSizer) Run() error {
 	size, err := d.Count()
 	if err != nil {
 		return err
@@ -93,10 +92,9 @@ func (d *DirSizer) Run() error {
 	if size > d.Threshold {
 		log.Printf(logTmpl, util.ByteCountIEC(size))
 
-		subject := fmt.Sprintf(subjectTmpl, d.Domain)
+		subject := fmt.Sprintf(subjectTmpl, d.Identifier)
 		body := fmt.Sprintf(
 			bodyTmpl,
-			d.Domain,
 			util.ByteCountIEC(size),
 			util.ByteCountIEC(d.Threshold),
 		)
@@ -109,8 +107,8 @@ func (d *DirSizer) Run() error {
 
 func main() {
 	d, err := NewDirSizer(
-		util.EnvOrDefault("DOMAIN", "localhost"),
-		util.EnvOrDefault("DIRPATH", "."),
+		util.EnvOrDefault("IDENTIFIER", "dir on localhost"),
+		util.EnvOrDefault("DIRECTORY", "."),
 		util.EnvOrDefault("MAIL_FROM", "dirsizer@localhost"),
 		util.EnvOrDefault("MAIL_TO", "root"),
 		util.EnvOrDefault("SMTP_SERVER", "localhost:25"),
@@ -120,9 +118,9 @@ func main() {
 		panic(err)
 	}
 
-	log.Printf("Starting DirSizer for %s", d.Domain)
+	log.Printf("Starting DirSizer for %s", d.Identifier)
 
-	ticker := time.NewTicker(6 * time.Hour)
+	ticker := time.NewTicker(4 * time.Hour)
 
 	for ; true; <-ticker.C {
 		if err = d.Run(); err != nil {
