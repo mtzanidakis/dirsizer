@@ -112,7 +112,7 @@ func main() {
 		util.EnvOrDefault("DOMAIN", "localhost"),
 		util.EnvOrDefault("DIRPATH", "."),
 		util.EnvOrDefault("MAIL_FROM", "dirsizer@localhost"),
-		util.EnvOrDefault("MAIL_TO", "manolis@netriin.net"),
+		util.EnvOrDefault("MAIL_TO", "root"),
 		util.EnvOrDefault("SMTP_SERVER", "localhost:25"),
 		util.EnvOrDefault("THRESHOLD", "500M"),
 	)
