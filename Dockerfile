@@ -1,15 +1,11 @@
-FROM golang:1.18-alpine as builder
-RUN apk add --no-cache git upx
+FROM golang:1.22-alpine as builder
+RUN apk add --no-cache git make tzdata upx
 COPY . /src
 WORKDIR /src
-RUN CGO_ENABLED=0 go build  -ldflags='-w -s -extldflags "-static"' -a
-RUN upx dirsizer
-RUN egrep '^root:' /etc/passwd > /etc/passwd.scratch && \
-	egrep '^root:' /etc/group > /etc/group.scratch
+RUN make build-static
+RUN upx --best --lzma dirsizer
 
-FROM scratch as base
-COPY --from=builder /etc/passwd.scratch /etc/passwd
-COPY --from=builder /etc/group.scratch /etc/group
-COPY --from=builder /src/dirsizer /bin/
-
-CMD ["/bin/dirsizer"]
+FROM scratch
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /src/dirsizer /usr/bin/dirsizer
+ENTRYPOINT ["/usr/bin/dirsizer"]
