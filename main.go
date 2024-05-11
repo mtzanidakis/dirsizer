@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mtzanidakis/dirsizer/pkg/util"
+	"github.com/mtzanidakis/dirsizer/internal/util"
 	"gopkg.in/gomail.v2"
 )
 
